@@ -1,24 +1,25 @@
 from tkinter import *
 from tkinter.filedialog import askopenfilename
+from PIL import Image, ImageTk
 
-# image = placeholder_image
-# this is initial setup
 
 def upload():
-    filename = askopenfilename(title="Choose a file", filetypes=[(".png file", "*.png"), (".jpg file", "*.jpg")])
-    my_label.config(text=input.get())
-    image = PhotoImage(file=filename)
+    filename = askopenfilename(title="Choose a file", filetypes=[(".png file", "*.png")])
+    # my_label.config(text=input.get())
+    image = Image.open(filename)
+    canv_image = ImageTk.PhotoImage(image)
 
 
 window = Tk()
 window.title("Image Watermarker")
-window.minsize(width=500, height=300)
+window.geometry("500x300")
 window.config(padx=200, pady=200)
 
-canvas = Canvas(width=850, height=576, highlightthickness=0)
-current_card = canvas.create_image(425, 288, image=image)
+image = Image.open("./images/default_img.png")
+image.resize((400, 300))
+canv_image = ImageTk.PhotoImage(image)
 
-my_label = Label(text="I am a Label", font=("Arial", 24, "bold"))
+my_label = Label(window, image=canv_image, width=500, height=300)
 my_label.grid(column=0, row=0)
 my_label["text"] = "New Text"
 my_label.config(padx=50, pady=50)
