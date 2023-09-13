@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter.filedialog import askopenfilename, asksaveasfile
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from PIL import Image, ImageTk, ImageDraw, ImageFont
 
 BG_COLOR = "#d8d8eb"
@@ -29,24 +29,27 @@ def upload():
 
 
 def save():
-    save_file = asksaveasfile(mode="w", title="Save file", filetypes=[(".png file", "*.png")])
+    save_file = asksaveasfilename(title="Save file", filetypes=[(".png file", "*.png")])
     if save_file:
         wm_image = image
         wm_image.save(save_file)
-
-    pass
 
 
 def watermark():
     global image, canv_image
 
+    image = image.rotate(-45, expand=1)
     draw = ImageDraw.Draw(image)
     wm_text = wm_entry.get()
     font = ImageFont.truetype('arial.ttf', 30)
     width, height = image.size
     x = width / 6
-    y = height / 2
-    draw.text((x, y), wm_text, font=font, fill=(0, 0, 0, 0))
+    y = height / 4
+    for _ in range(0, 5):
+        draw.text((x, y), wm_text, font=font, fill=(0, 0, 0, 0))
+        x += 60
+        y += 80
+    image = image.rotate(45, expand=1)
     canv_image = ImageTk.PhotoImage(image)
     image_label.config(image=canv_image)
 
@@ -100,7 +103,7 @@ wm_entry_label.config(pady=20)
 
 wm_entry = Entry(width=50)
 wm_entry.grid(column=1, row=3, columnspan=2, sticky="EW")
-wm_entry.insert(END, "Placeholder Text")
+wm_entry.insert(END, "Placeholder Text ©")
 wm_entry.focus()
 
 window.mainloop()
