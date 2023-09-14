@@ -4,12 +4,10 @@ from PIL import Image, ImageTk, ImageDraw, ImageFont
 
 BG_COLOR = "#d8d8eb"
 FONT = ("Ariel", 14, "bold")
-WM_TEXT = ""
 
 
 def upload():
-    global image
-    global canv_image
+    global image, canv_image
 
     filename = askopenfilename(title="Choose a file", filetypes=[(".png file", "*.png")])
     try:
@@ -17,8 +15,13 @@ def upload():
     except AttributeError:
         return
     # If image dimensions scale is less than 1, round it to 1. Else keep the scaling.
-    resize_scale = image.width / 375
-    if resize_scale < 0.5:
+    if image.width >= 600:
+        resize_scale = image.width / 375
+        if resize_scale < 0.5:
+            resize_scale = 1
+    elif image.width < 375:
+        resize_scale = 375 / image.width
+    else:
         resize_scale = 1
     resized_width = int(image.width / resize_scale)
     resized_height = int(image.height / resize_scale)
@@ -29,7 +32,8 @@ def upload():
 
 
 def save():
-    save_file = asksaveasfilename(title="Save file", filetypes=[(".png file", "*.png")])
+    global image
+    save_file = asksaveasfilename(title="Save file", filetypes=[(".png file", "*.png")], defaultextension="*.png")
     if save_file:
         wm_image = image
         wm_image.save(save_file)
@@ -38,18 +42,25 @@ def save():
 def watermark():
     global image, canv_image
 
+    og_width, og_height = image.size
     image = image.rotate(-45, expand=1)
     draw = ImageDraw.Draw(image)
     wm_text = wm_entry.get()
     font = ImageFont.truetype('arial.ttf', 30)
     width, height = image.size
+    # Draw text diagonally. Rotates image, draws text, then rotates back.
     x = width / 6
     y = height / 4
-    for _ in range(0, 5):
+    for _ in range(0, 3):
         draw.text((x, y), wm_text, font=font, fill=(0, 0, 0, 0))
         x += 60
         y += 80
     image = image.rotate(45, expand=1)
+    new_width, new_height = image.size
+    width_dif = int((new_width - og_width) / 2)
+    height_dif = int((new_height - og_height) / 2)
+
+    image = image.crop([width_dif, height_dif, new_width-width_dif, new_height-height_dif])
     canv_image = ImageTk.PhotoImage(image)
     image_label.config(image=canv_image)
 
@@ -81,13 +92,13 @@ wm_button = Button(image=wm_btn_icon, command=watermark, bg=BG_COLOR, activeback
 wm_button.config(highlightthickness=0, borderwidth=0)
 wm_button.grid(column=0, row=2)
 
-import_btn_img = Image.open("./images/import_button_icon.png")
-import_btn_img = import_btn_img.resize((175, 75))
-import_btn_icon = ImageTk.PhotoImage(import_btn_img)
-import_button = Button(image=import_btn_icon, command=upload, bg=BG_COLOR, activebackground=BG_COLOR,
+upload_btn_img = Image.open("./images/import_button_icon.png")
+upload_btn_img = upload_btn_img.resize((175, 75))
+upload_btn_icon = ImageTk.PhotoImage(upload_btn_img)
+upload_button = Button(image=upload_btn_icon, command=upload, bg=BG_COLOR, activebackground=BG_COLOR,
                        text="Import Image", font=FONT, compound="center")
-import_button.config(highlightthickness=0, borderwidth=0)
-import_button.grid(column=1, row=2)
+upload_button.config(highlightthickness=0, borderwidth=0)
+upload_button.grid(column=1, row=2)
 
 save_btn_img = Image.open("./images/save_button_icon.png")
 save_btn_img = save_btn_img.resize((175, 75))
